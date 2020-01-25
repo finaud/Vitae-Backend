@@ -60,7 +60,7 @@ invasive_species = {
     'Lepomis humilis': 'orangespotted sunfish',
     'Celastrus orbiculatus': 'oriental bittersweet', 
     'Myriophyllum aquaticum': 'parrotfeather', 
-    "Ampelopsis glandulosa var. brevipedunculata": "porcelain-berry"
+    "Ampelopsis glandulosa var. brevipedunculata": "porcelain-berry",
     "Securigera varia": "purple crown-vetch",
     "Lythrum salicaria": 'purple loosestrife',
     'Dreissena bugensis': 'quagga musse',

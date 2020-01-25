@@ -65,3 +65,5 @@ urllib3==1.25.8
 wasabi==0.6.0
 Werkzeug==0.16.0
 zipp==2.1.0
+
+wikipedia

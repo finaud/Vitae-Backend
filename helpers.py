@@ -32,13 +32,14 @@ def get_image(name: str):
 def classify_image(fn, lat, lon, uid):
     image = get_image(fn)
     latin_name, index, tensor = learn.predict(image)
-    if float(tensor[index]) >= 0.70:
-        latin_name = str(learn.predict(image)[0]).title()
+    if float(tensor[index]) >= 0.35:
+        latin_name = str(learn.predict(image)[0])
         summary = wikipedia.summary(latin_name, sentences=4)
         wiki_images = wikipedia.page(latin_name).images
         wiki_image = str(wiki_images[0]) if wiki_images else "https://www.freeiconspng.com/uploads/no-image-icon-12.jpg"
         is_invasive = latin_name in invasive_species
         name = invasive_species[latin_name].title() if is_invasive else latin_name
+        latin_name = latin_name.title() if is_invasive else ""
         data = {
             "name": name,
             "latin_name": latin_name,

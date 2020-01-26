@@ -87,4 +87,4 @@ def get_all_invasive_captures():
                              'icon': 'marker'
                          }})
 
-        return captures
+    return captures

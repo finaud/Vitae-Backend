@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 
 import helpers
 
@@ -30,6 +30,13 @@ def get_captures():
     captures = helpers.get_captures(uid)
 
     return jsonify(captures)
+
+
+@app.route('/invasive_map', methods=["GET"])
+def invasive_map():
+    """Plots all the captures of invasive species."""
+    data = helpers.get_all_invasive_captures()
+    return render_template('map.html', data=data)
 
 
 if __name__ == '__main__':

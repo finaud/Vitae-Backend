@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Draw GeoJSON points</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet" />
+<style>
+	body { margin: 0; padding: 0; }
+	#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1IjoiYW50b2luZWZpbm90IiwiYSI6ImNrNXY4eDd3ejBwb3Izbm14bWt6dHNqZzgifQ.MixURX9vETl8Tjk1z5MWuQ';
+var map = new mapboxgl.Map({
+container: 'map',
+style: 'mapbox://styles/mapbox/light-v10',
+center: [-96, 37.8],
+zoom: 3
+});
+
+map.on('load', function() {
+map.addLayer({
+'id': 'points',
+'type': 'symbol',
+'source': {
+'type': 'geojson',
+'data': {
+'type': 'FeatureCollection',
+'features': {{ data|tojson|safe }}
+}
+},
+'layout': {
+// get the icon name from the source's "icon" property
+// concatenate the name to get an icon from the style's sprite sheet
+'icon-image': ['concat', ['get', 'icon'], '-15'],
+// get the title name from the source's "title" property
+'text-field': ['get', 'title'],
+'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+'text-offset': [0, 0.6],
+'text-anchor': 'top'
+}
+});
+});
+</script>
+
+</body>
+</html>

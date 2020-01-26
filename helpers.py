@@ -7,7 +7,6 @@ from google.cloud.firestore_v1 import Increment
 import fastai.vision as vision
 import wikipedia
 
-
 # Initialize Firebase
 cred = credentials.Certificate('key.json')
 initialize_app(cred, {'storageBucket': 'vitae-266301.appspot.com'})
@@ -16,7 +15,6 @@ bucket = storage.bucket()
 
 # Initialize classification model
 learn = vision.load_learner('models')
-
 
 with open('models/invasive_species.json') as f:
     invasive_species = json.load(f)
@@ -32,7 +30,7 @@ def get_image(name: str):
 def classify_image(fn, lat, lon, uid):
     image = get_image(fn)
     latin_name, index, tensor = learn.predict(image)
-    if float(tensor[index]) >= 0.35:
+    if float(tensor[index]) >= 0.55:
         latin_name = str(learn.predict(image)[0])
         summary = wikipedia.summary(latin_name, sentences=2)
         wiki_images = wikipedia.page(latin_name).images
@@ -69,3 +67,24 @@ def get_captures(uid):
         data['location'] = [data['location'].latitude, data['location'].longitude]
         captures.append(data)
     return captures
+
+
+def get_all_invasive_captures():
+    docs = db.collection_group(u'captures').where(u'is_invasive', u'==', True).stream()
+    captures = []
+    for doc in docs:
+        data = doc.to_dict()
+        captures.append({'type': 'Feature',
+                         'geometry': {
+                             'type': 'Point',
+                             'coordinates': [
+                                 data['location'].longitude,
+                                 data['location'].latitude
+                             ]
+                         },
+                         'properties': {
+                             'title': data['latin_name'],
+                             'icon': 'marker'
+                         }})
+
+        return captures

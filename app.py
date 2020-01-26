@@ -4,7 +4,7 @@ import requests
 from flask import Flask, request, jsonify
 from firebase_admin import credentials, firestore, initialize_app, storage
 
-from fastai.vision import *
+import fastai.vision as vision
 
 
 # Initialize Flask App
@@ -18,7 +18,7 @@ db = firestore.client()
 bucket = storage.bucket()
 
 # Initialize classification model
-learn = load_learner('models')
+learn = vision.load_learner('models')
 
 
 @app.route('/')
@@ -42,7 +42,7 @@ def get_image(name: str):
     blob = bucket.blob(name)
     url = blob.generate_signed_url(datetime.timedelta(seconds=300), method='GET')
     response = requests.get(url)
-    return open_image(BytesIO(response.content))
+    return vision.open_image(BytesIO(response.content))
 
 
 if __name__ == '__main__':

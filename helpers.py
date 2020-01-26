@@ -99,3 +99,5 @@ invasive_species = {
     'Proterorhinus marmoratus': 'tubenose goby',
     'Carex disticha': 'tworank sedge'
 }
+
+non_invasive = ['black bear', 'racoon', 'husky', 'red squirrel', 'oak tree', 'wild salmon', 'red fox', 'sunflower']

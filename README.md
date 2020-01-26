@@ -18,7 +18,7 @@ species is invasive) and is able to see all of their past "captures" on an inter
 ## How We Built It
 The front-end was developed in Swift, and communicates with the back-end via HTTP requests
 and the Google Firebase SDK. The back-end is a Flask server that also contains a custom 
-pytorch model, trained on over 100 invasive species found in Ontario. All user data is stored
+fastai model, trained on over 100 invasive species found in Ontario. All user data is stored
 on Google Firebase.
 
 ## Challenges We Ran Into
@@ -27,7 +27,7 @@ planned to have the back-end hosted on Google Cloud's App Engine; this worked fi
 deploying the model (we tried different workarounds for 5 hours). We then tried DigitalOcean, but
 multiple email addresses we used had their accounts automatically locked for some strange reason.
 We finally were able to get a DigitalOcean droplet running, but once again were able to deploy 
-everything but the model (we figured it was some problem with the pytorch library). Next was Heroku;
+everything but the model (we figured it was some problem with the fastai library). Next was Heroku;
 setup went smoothly, but we were unable to deploy yet again. We finally settled on just running the 
 back-end on locally on one of our computers since our time could be used more productively elsewhere.
 

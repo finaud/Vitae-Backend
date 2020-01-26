@@ -42,6 +42,11 @@ We were really proud of our idea and working from scratch. Our classification mo
 On the technical side, this was the first time our mobile developer had integrated a map or camera
 functionality into an iOS app. This was also the first time for us to try to host something on 
 Google App Engine or Digital Ocean; while it didn't work in the end, we learned a bit about each 
-platform 
+platform and Docker. We also learned about invasive species, and the power of teamwork!
 
 ## What's next for Vitae
+Our first change would be to host it as a proper instance on a third-party platform so it could
+actually be used; this would allow users to begin populating the database. Then end-goal is to have
+enough geotagged data to provide research with enough information to get a general sense of where
+invasive species are spreading to, and at what rate. We'd also like to train the model on even more
+species/images. 

@@ -1,103 +1,70 @@
+import json
+import datetime
+from io import BytesIO
+import requests
+from firebase_admin import credentials, firestore, initialize_app, storage
+from google.cloud.firestore_v1 import Increment
+import fastai.vision as vision
 import wikipedia
 
-def get_wikipedia_excerpt(name: str, sentences: int) -> str:
-    # Return a wikipedia excerpt of sentences length on name
-    return wikipedia.summary(name, sentences=sentences)
 
-invasive_species = {
-    "Lysimachia vulgaris": "garden loosestrife", 
-    "Alliaria petiolata": "garlic mustard",
-    "Myosoton aquaticum": "giant chickweed",
-    "Achatina fulica": "giant East African snail",
-    "Achatina achatina": "giant Ghana tiger snail",
-    "Heracleum mantegazzianum": "giant hogweed",
-    "Reynoutria sachalinensis": "giant knotweed",
-    "Arundo donax": "giant reed",
-    "Frangula alnus": "glossy buckthorn", 
-    "Limnoperna fortunei": "golden mussel", 
-    "Carassius auratus": "goldfish", 
-    "Aegopodium podagraria": "goutweed", 	
-    "Ctenopharyngodon idella": "grass carp",
-    "Chelidonium majus": "greater celandine",
-    "Lymantria dispar": "gypsy moth",
-    "Epilobium hirsutum": "hairy willowherb",
-    "Carex flacca": "heath sedge",
-    "Epipactis helleborine": "helleborine",
-    "Adelges tsugae": "hemlock woolly adelgid",
-    "Geum urbanum": "herb bennet",
-    "Impatiens glandulifera": "Himalayan balsam",
-    "Rubus bifrons": "Himalayan blackberry",
-    "Typha x glauca": "hybrid cattail",
-    "Hydrilla verticillata": "hydrilla",
-    "Centaurea iberica": "Iberian starthistle",
-    "Berberis thunbergii": "Japanese barberry",
-    "Achyranthes japonica": "Japanese chaff flower",
-    "Torilis japonica": "Japanese hedge-parsley",
-    "Lonicera japonica": "Japanese honeysuckle",
-    "Reynoutria japonica": "Japanese knotweed",
-    "Microstegium vimineum": "Japanese stiltgrass",
-    "Aegilops cylindrica": "jointed goatgrass",
-    'Amynthas spp.': 'jumping earthworm',
-    'Trogoderma granarium': 'khapra beetle',	
-    'Dikerogammarus villosus': 'killer shrimp',
-    'Pueraria montana var. lobata': 'kudzu',
-    'Euphorbia esula': 'leafy spurge',
-    'Convallaria majalis': 'lily of the valley',
-    'Persicaria perfoliata': 'mile-a-minute vine', 
-    'Lonicera morrowii': 'Morrow\'s honeysuckle',
-    'Sedum acre': 'mossy stonecrop',	
-    'Berberis aquifolium': 'mountain grape',
-    'Dendroctonus ponderosae': 'mountain pine beetle',
-    'Rosa multiflora': 'multiflora rose',
-    'Typha angustifolia': 'narrow-leaved cattail',
-    'Cardamine impatiens': 'narrowleaf bittercress',
-    'Potamopyrgus antipodarum': 'New Zealand mud snail',
-    'Oreochromis niloticus': 'Nile tilapia',	
-    'Channa argus': 'northern snakehead',
-    'Acer platanoides': 'Norway maple',
-    'Lymantria monacha': 'nun moth',
-    'Bretziella fagacearum': 'oak wilt',
-    'Lepomis humilis': 'orangespotted sunfish',
-    'Celastrus orbiculatus': 'oriental bittersweet', 
-    'Myriophyllum aquaticum': 'parrotfeather', 
-    "Ampelopsis glandulosa var. brevipedunculata": "porcelain-berry",
-    "Securigera varia": "purple crown-vetch",
-    "Lythrum salicaria": 'purple loosestrife',
-    'Dreissena bugensis': 'quagga musse',
-    'Osmerus mordax': 'rainbow smelt', 
-    'Aromia bungii': 'red necked longicorn',
-    'Procambarus clarkii': 'red swamp crayfish',	
-    'Agrostis gigantea': 'redtop',	
-    'Phalaris arundinacea': 'reed canarygrass',
-    'Lymantria mathura': 'rosy gypsy moth',
-    'Glyceria maxima': 'rough mannagrass', 
-    'Neogobius melanostomus': 'round goby',
-    'Scardinius erythrophthalmus': 'rudd',	
-    'Elaeagnus angustifolia': 'Russian olive',
-    'Orconectes rusticus': 'rusty crayfish',
-    'Pinus sylvestris': 'Scots pine',
-    'Solidago sempervirens': 'seaside goldenrod',
-    'Lonicera x bella': 'showy fly honeysuckle, Bell\'s honeysuckle',
-    'Caragana arborescens': 'Siberian peashrub',
-    'Hypophthalmichthys molitrix': 'silver carp',
-    'Alopecurus myosuroides': 'slender meadow foxtail',
-    'Epilobium parviflorum': 'smallflower hairy willowherb',
-    'Bromus inermis ssp. inermis': 'smooth brome',	
-    'Bythotrephes longimanus': 'spiny waterflea',
-    'Centaurea stoebe ssp. micranthos': 'spotted knapweed',
-    'Lycorma delicatula': 'spotted lanternfly',
-    'Torilis arvensis': 'spreading hedgeparsley',
-    'Scilla siberica': 'squill',	
-    'Pseudorasbora parva': 'stone moroko',
-    'Sedum spp.': 'stonecrop',
-    'Pluchea odorata': 'sweetscent',
-    'Lonicera tatarica': 'Tatarian honeysuckle',
-    'Dipsacus spp.': 'teasel',	
-    'Tinca tinca': 'tench',	
-    'Gasterosteus aculeatus': 'threespine stickleback',
-    'Ailanthus altissima': 'tree-of-heaven',
-    'Proterorhinus marmoratus': 'tubenose goby',
-    'Carex disticha': 'tworank sedge'
-}
+# Initialize Firebase
+cred = credentials.Certificate('key.json')
+initialize_app(cred, {'storageBucket': 'vitae-266301.appspot.com'})
+db = firestore.client()
+bucket = storage.bucket()
 
-non_invasive = ['black bear', 'racoon', 'husky', 'red squirrel', 'oak tree', 'wild salmon', 'red fox', 'sunflower']
+# Initialize classification model
+learn = vision.load_learner('models')
+
+
+with open('models/invasive_species.json') as f:
+    invasive_species = json.load(f)
+
+
+def get_image(name: str):
+    blob = bucket.blob(name)
+    url = blob.generate_signed_url(datetime.timedelta(seconds=300), method='GET')
+    response = requests.get(url)
+    return vision.open_image(BytesIO(response.content))
+
+
+def classify_image(fn, lat, lon, uid):
+    image = get_image(fn)
+    latin_name, index, tensor = learn.predict(image)
+    if float(tensor[index]) >= 0.70:
+        latin_name = str(learn.predict(image)[0]).title()
+        summary = wikipedia.summary(latin_name, sentences=4)
+        wiki_images = wikipedia.page(latin_name).images
+        wiki_image = str(wiki_images[0]) if wiki_images else "https://www.freeiconspng.com/uploads/no-image-icon-12.jpg"
+        is_invasive = latin_name in invasive_species
+        name = invasive_species[latin_name].title() if is_invasive else latin_name
+        data = {
+            "name": name,
+            "latin_name": latin_name,
+            "bucket_fn": fn,
+            "date": datetime.datetime.now(),
+            "location": firestore.firestore.GeoPoint(lat, lon),
+            "summary": summary,
+            "wiki_image": wiki_image,
+            "is_invasive": is_invasive
+        }
+
+        db.collection(f'users/{uid}/captures').add(data)
+        points = 5 if is_invasive else 1
+        db.document(f'users/{uid}').set({u'score': Increment(points)}, merge=True)
+
+        return {"name": name, "latin_name": latin_name, "summary": summary,
+                "wiki_image": wiki_image, "is_invasive": is_invasive}
+
+    return {"error": "Whoops! We weren't able to classify that image. Please take another one, from a different angle."}
+
+
+def get_captures(uid):
+    docs = db.collection(f'users/{uid}/captures').stream()
+    captures = []
+    for doc in docs:
+        data = doc.to_dict()
+        data['location'] = [data['location'].latitude, data['location'].longitude]
+        captures.append(data)
+    return captures

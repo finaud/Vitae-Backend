@@ -1,24 +1,9 @@
-import datetime
-from io import BytesIO
-import requests
 from flask import Flask, request, jsonify
-from firebase_admin import credentials, firestore, initialize_app, storage
-import wikipedia
-import fastai.vision as vision
 
+import helpers
 
 # Initialize Flask App
 app = Flask(__name__)
-
-
-# Initialize Firebase
-cred = credentials.Certificate('key.json')
-initialize_app(cred, {'storageBucket': 'vitae-266301.appspot.com'})
-db = firestore.client()
-bucket = storage.bucket()
-
-# Initialize classification model
-learn = vision.load_learner('models')
 
 
 @app.route('/')
@@ -27,25 +12,24 @@ def hello():
     return 'Hello World!'
 
 
-@app.route('/classify_image', methods=["GET"])
-def classify_image():
-    fn = request.args.get('fn')
+@app.route('/classify', methods=["GET"])
+def classify():
+    """Classify an image, given its name in the Firestore bucket."""
+    args = request.args
+    fn, uid, lat, lon = args.get('fn'), args.get('uid'), float(args.get('lat')), float(args.get('lon'))
     if fn:
-        image = get_image(fn)
-        prediction = str(learn.predict(image)[0])
-        summary = wikipedia.summary(prediction)
-        images = wikipedia.page(prediction).images
-        image = str(images[0]) if images else "https://www.freeiconspng.com/uploads/no-image-icon-12.jpg"
-        return jsonify({'species': prediction, 'summary': summary, 'image': image})
+        return jsonify(helpers.classify_image(fn, lat, lon, uid))
 
     return jsonify({})
 
 
-def get_image(name: str):
-    blob = bucket.blob(name)
-    url = blob.generate_signed_url(datetime.timedelta(seconds=300), method='GET')
-    response = requests.get(url)
-    return vision.open_image(BytesIO(response.content))
+@app.route('/get_captures', methods=["GET"])
+def get_captures():
+    """Return a list of species captures a user has taken."""
+    uid = request.args.get('uid')
+    captures = helpers.get_captures(uid)
+
+    return jsonify(captures)
 
 
 if __name__ == '__main__':

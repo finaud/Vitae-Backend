@@ -3,7 +3,7 @@ from io import BytesIO
 import requests
 from flask import Flask, request, jsonify
 from firebase_admin import credentials, firestore, initialize_app, storage
-
+import wikipedia
 import fastai.vision as vision
 
 
@@ -27,13 +27,16 @@ def hello():
     return 'Hello World!'
 
 
-@app.route('/classify_image')
+@app.route('/classify_image', methods=["GET"])
 def classify_image():
     fn = request.args.get('fn')
     if fn:
         image = get_image(fn)
         prediction = str(learn.predict(image)[0])
-        return jsonify({'species': prediction})
+        summary = wikipedia.summary(prediction)
+        images = wikipedia.page(prediction).images
+        image = str(images[0]) if images else "https://www.freeiconspng.com/uploads/no-image-icon-12.jpg"
+        return jsonify({'species': prediction, 'summary': summary, 'image': image})
 
     return jsonify({})
 
